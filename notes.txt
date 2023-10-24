@@ -1,0 +1,42 @@
+# init: d <-0 and U <- U'
+# delta = 0
+# oldValues = self.values.copy()
+# error = 1
+                       
+# if abs(oldValues[state] - self.getValue(state)) > delta:
+# delta = abs(oldValues[state] - self.getValue(state))
+
+            if self.iterations == 2 and self.discount == 0.75:
+                print("state and prob: ", nextState, probNextState)
+                        if self.iterations == 2 and self.discount == 0.75:
+            print()
+            print(self.values)
+            print(state, action, transAndProbs)
+             if self.iterations == 2 and self.discount == 0.75:
+                    print("disc, prob, vals, reward: ", self.discount, probNextState, self.values[nextState], self.mdp.getReward(state, action, nextState))
+                    print(qVal)
+
+------------------------------------
+
+        maxQValue = -sys.maxsize
+        transAndProbs = self.mdp.getTransitionStatesAndProbs(state, action) 
+        if self.iterations == 2 and self.discount == 0.75:
+            print()
+            print(self.values)
+            print(state, action, transAndProbs)
+        sum = 0
+        for i in range(len(transAndProbs)):
+            nextState = transAndProbs[i][0]
+            probNextState = transAndProbs[i][1]
+            if probNextState != 0:
+                if self.iterations == 2 and self.discount == 0.75:
+                    print("state and prob: ", nextState, probNextState)
+                qValue = self.mdp.getReward(state, action, nextState) + (self.discount * probNextState * self.values[nextState])
+                sum += qValue
+                if self.iterations == 2 and self.discount == 0.75:
+                    print("disc, prob, vals, reward: ", self.discount, probNextState, self.values[nextState], self.mdp.getReward(state, action, nextState))
+                    print(qValue)
+                maxQValue = max(qValue, maxQValue)
+        if self.iterations == 2 and self.discount == 0.75:
+            print("ans? ", sum)
+        return maxQValue
