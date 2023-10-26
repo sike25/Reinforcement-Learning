@@ -64,22 +64,15 @@ class ValueIterationAgent(ValueEstimationAgent):
           Run the value iteration algorithm. Note that in standard
           value iteration, V_k+1(...) depends on V_k(...)'s.
         """
-        # print("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-        # print("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-        # print("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-        # print("----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
         for i in range(self.iterations):
-            # print()
             oldValues = self.values.copy()
             for state in self.mdp.getStates():
                 newVal = self.computeNewValue(state, oldValues)
                 self.values[state] = newVal
-            # print(self.values)
 
     def computeNewValue(self, state, oldValues):
         if state == "TERMINAL_STATE":
             return 0
-        
         maxValue = -sys.maxsize
         for action in self.mdp.getPossibleActions(state):
             transAndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
@@ -90,28 +83,7 @@ class ValueIterationAgent(ValueEstimationAgent):
                 reward = self.mdp.getReward(state, action, nextState)
                 sumQ += (probOfNextState * oldValues[nextState] * self.discount) + reward
             maxValue = max(maxValue, sumQ)
-
         return maxValue
-
-
-        maxValue = -sys.maxsize
-        for action in self.mdp.getPossibleActions(state):
-            transAndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
-            for i in range(len(transAndProbs)):
-                nextState = transAndProbs[i][0]
-                probOfNextState = transAndProbs[i][1]
-                reward = self.mdp.getReward(state, action, nextState)
-                value = reward + (self.discount * probOfNextState * oldValues[nextState]) 
-                maxValue = max(maxValue, value)
-
-                if maxValue == value:
-                    printR = reward
-                    printP = probOfNextState
-                    printV = oldValues[nextState]
-
-        print("reward, discount, probability, value: ", printR, self.discount, printP, printV)
-        return maxValue
-
 
     def getValue(self, state):
         """
@@ -127,26 +99,14 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         if state == "TERMINAL_STATE":
             return 0
-
         transAndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
         qValue = 0
-
         for i in range(len(transAndProbs)):
             nextState = transAndProbs[i][0]
             probNextState = transAndProbs[i][1]
             reward = self.mdp.getReward(state, action, nextState)
-
-            # nextActions = self.mdp.getPossibleActions(nextState)
-            # maxQ = -sys.maxsize
-            # for nextAction in nextActions:
-            #     nextQVal = self.computeQValueFromValues(nextState, nextAction)
-            #     maxQ = max(maxQ, nextQVal)
-
             qValue += (probNextState * self.values[nextState] * self.discount) + reward
-
         return qValue
-
-
 
     def computeActionFromValues(self, state):
         """
