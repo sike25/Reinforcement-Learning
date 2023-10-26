@@ -63,7 +63,17 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
           Run the value iteration algorithm. Note that in standard
           value iteration, V_k+1(...) depends on V_k(...)'s.
+
+          We use batch update-- that is, when we need to update a value using a value
+          from another state, we use the value from the last iteration, even though, the
+          value might already have changed in the present iteration.
+          Hence, the variable oldValues
+
+          Furthermore, our completion condition is simply the number of iterations. 
+          Not the complicated formula from class.
         """
+        # Update the utility/value of each state using the potential new states 
+        # (their utilities and probabilities)
         for i in range(self.iterations):
             oldValues = self.values.copy()
             for state in self.mdp.getStates():
@@ -71,17 +81,26 @@ class ValueIterationAgent(ValueEstimationAgent):
                 self.values[state] = newVal
 
     def computeNewValue(self, state, oldValues):
+        # The fugue state we end up, after we have left the GUI-displayed terminal
+        # This state allows our GUI-displayed terminal to be updated 
         if state == "TERMINAL_STATE":
             return 0
+        # to hold the maximum Q value or the new utility
         maxValue = -sys.maxsize
         for action in self.mdp.getPossibleActions(state):
+            # What states could we potentially end up if we take this action
+            # at this present state? And how likely are each of them?
             transAndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
+            # For each potential state, find its Q value...
+            # The sum of all states' (probability * utility) 
+            # times the discount + the reward
             sumQ = 0
             for i in range(len(transAndProbs)):
                 nextState = transAndProbs[i][0]
                 probOfNextState = transAndProbs[i][1]
                 reward = self.mdp.getReward(state, action, nextState)
                 sumQ += (probOfNextState * oldValues[nextState] * self.discount) + reward
+            # The max Q value out of all the actions' Q values
             maxValue = max(maxValue, sumQ)
         return maxValue
 
@@ -96,6 +115,16 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
           Compute the Q-value of action in state from the
           value function stored in self.values.
+
+          For each state, we find its potential next states,
+          given the input actions.
+          We take the product of the utilities and the 
+          probabilities of these potential next states,
+          and add them all together. That is the Q-value.
+
+          This function only works after runValueIteration() 
+          has populated self.values, giving each state a utility.
+          This is done in the constructor.
         """
         if state == "TERMINAL_STATE":
             return 0
@@ -116,6 +145,10 @@ class ValueIterationAgent(ValueEstimationAgent):
           You may break ties any way you see fit.  Note that if
           there are no legal actions, which is the case at the
           terminal state, you should return None.
+
+          Here, we check which action would give us the greatest
+          qValue, and return that. Ties are not broken. The latest
+          max qValue is what gets returned.
         """
         maxAction = None
         maxQValue = -sys.maxsize

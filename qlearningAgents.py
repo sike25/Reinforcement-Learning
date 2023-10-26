@@ -37,6 +37,9 @@ class QLearningAgent(ReinforcementAgent):
       Functions you should use
         - self.getLegalActions(state)
           which returns legal actions for a state
+
+          The practical objective of QLearning is to eliminate the simultaneous 
+          record of utilities/values, and rely only on the Qs.
     """
     def __init__(self, **args):
         "You can initialize Q-values here..."
@@ -60,6 +63,11 @@ class QLearningAgent(ReinforcementAgent):
           where the max is over legal actions.  Note that if
           there are no legal actions, which is the case at the
           terminal state, you should return a value of 0.0.
+
+          This is the inverse of the QValueFromValues function
+          in valueIterationAgent. 
+          The maximum of each legal action's qValue is the 
+          utility/value of that state
         """
         actions = self.getLegalActions(state)
         if len(actions) == 0:
@@ -75,11 +83,12 @@ class QLearningAgent(ReinforcementAgent):
           Compute the best action to take in a state.  Note that if there
           are no legal actions, which is the case at the terminal state,
           you should return None.
+          The best action produces the greatest Q value
         """
         actions = self.getLegalActions(state)
         # Find the maximum Q value
         if len(actions) == 0:
-            return 0
+            return None
         maxQValue = -sys.maxsize
         for action in actions:
             qValue = self.getQValue(state, action)
@@ -103,9 +112,15 @@ class QLearningAgent(ReinforcementAgent):
           should choose None as the action.
           HINT: You might want to use util.flipCoin(prob)
           HINT: To pick randomly from a list, use random.choice(list)
+
+          Epsilon-greedy. Epsilon percent of the time, we take a random
+          action. The other times, we take the best action.
+          This algorithm is for striking a balance between curious and greedy.
+          If we find something good, we want to exploit it, yes, but not at the expense
+          of learning new stuff (we have to discover the magic of dance!).
+          So sometimes, we do what it best, and other times, we take a chance to explore, and learn
         """
         # Pick Action
-        # print("getAction")
         legalActions = self.getLegalActions(state)
         if len(legalActions) == 0:
             return None
@@ -120,15 +135,19 @@ class QLearningAgent(ReinforcementAgent):
           state = action => nextState and reward transition.
           You should do your Q-Value update here
           NOTE: You should never call this function,
-          it will be called on your behalf
+          it will be called on your behalf.
         """
         maxNextQValue = -sys.maxsize
         nextActions = self.getLegalActions(nextState)
+        # Find the max Q from each legal action's Q
         for nextAction in nextActions:
             nextQValue = self.getQValue(nextState, nextAction)
             maxNextQValue = max(maxNextQValue, nextQValue)
+        # If we are at the fugue terminal state, after the GUI-displayed terminal
+        # This state allows our GUI-displayed terminal to be updated.
         if len(nextActions) == 0:
             maxNextQValue = 0
+        # Q(s,a) = Q(s,a) + alpha(r + (dmaxQ(s', a') - Q(s,a)))
         self.qValues[(state, action)] = self.qValues[(state, action)] + self.alpha * (reward + ((self.discount * maxNextQValue) - self.qValues[(state, action)]))
 
 
@@ -175,6 +194,16 @@ class ApproximateQAgent(PacmanQAgent):
        You should only have to overwrite getQValue
        and update.  All other QLearningAgent functions
        should work as is.
+
+       The goal of this process to replace states (which can be many)
+       with features, which are usually much fewer.
+       Number of ghosts nearby, number of foods nearby...
+       instead of just states.
+       So the map: state -> QValue (q learning) or 
+       state -> Utility (value iteration)
+       becomes: feature -> weight
+       We increase or decrease the weights of each feature depending on the 
+       rewards or penalties it led us to.
     """
     def __init__(self, extractor='IdentityExtractor', **args):
         self.featExtractor = util.lookup(extractor, globals())()
@@ -187,8 +216,11 @@ class ApproximateQAgent(PacmanQAgent):
     def getQValue(self, state, action):
         """
           Should return Q(state,action) = w * featureVector
-          where * is the dotProduct operator
+          where * is the dotProduct operator.
+          Now, we have to deduce the Q from the weight and the 
+          feature vector
         """
+        # Q(s, a) = sum (fi(s,a) * wi)
         qValue = 0
         features = self.featExtractor.getFeatures(state, action)
         for feature, fValue in features.items():
@@ -199,6 +231,7 @@ class ApproximateQAgent(PacmanQAgent):
         """
            Should update your weights based on transition
         """
+        # Find the Utility/ the maxQValue of the next state
         maxNextQValue = -sys.maxsize
         nextActions = self.getLegalActions(nextState)
         for nextAction in nextActions:
@@ -206,8 +239,15 @@ class ApproximateQAgent(PacmanQAgent):
             maxNextQValue = max(maxNextQValue, nextQValue)
         if len(nextActions) == 0:
             maxNextQValue = 0
+
+        # difference = 
+        # (the reward of moving from state to nextState via input action) 
+        # + (discount * nextState's utility) - (this state's utility)
         difference = reward + (self.discount * maxNextQValue) - self.getQValue(state, action) 
+
+        # collect features with given class and function
         features = self.featExtractor.getFeatures(state, action)
+        # update wi = wi + alpha (difference * fi(s,a))
         for feature, fValue in features.items():
             self.weights[feature] = self.weights[feature] + self.alpha * (difference * fValue)
 
