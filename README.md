@@ -19,7 +19,7 @@ It can be run for one particular test by commands of the form:
 
     python autograder.py -t test_cases/q2/1-bridge-grid
 
-**| Files I  edited:                    |   **                                                                                                                          |
+| Files I  edited:                    |                                                                                                                         |
 | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | valueIterationAgents.py             | A value iteration agent for solving known MDPs.                                                                             |
 | qlearningAgents.py                  | Q-learning agents for Gridworld, Crawler and Pacman.                                                                        |
